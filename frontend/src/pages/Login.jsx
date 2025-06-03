@@ -85,7 +85,7 @@ const Login = ({ setAuth }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-white px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-90 to-white px-4">
       <motion.div
         className="w-full max-w-md"
         variants={containerVariants}
