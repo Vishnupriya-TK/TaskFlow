@@ -4,13 +4,20 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 
+
 const app = express();
 
-// CORS configuration
+// Define allowed origins from environment variable
+const corsEnv = process.env.CORS_ORIGINS; // e.g., "https://task-flow-jj39.onrender.com,http://localhost:5173"
+const allowedOrigins = corsEnv
+  ? corsEnv.split(',').map(s => s.trim()).filter(Boolean)
+  : ['http://localhost:5173']; // fallback
+
+console.log('Allowed CORS origins:', allowedOrigins);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // allow requests from frontend or allow server-to-server requests without origin
+    // allow requests from frontend or server-to-server (no origin)
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     console.warn('Blocked CORS request from', origin);
     return callback(new Error('Not allowed by CORS'));
@@ -19,6 +26,7 @@ const corsOptions = {
   methods: ['GET','POST','PUT','PATCH','DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
+
 app.use(cors(corsOptions));
 
 
