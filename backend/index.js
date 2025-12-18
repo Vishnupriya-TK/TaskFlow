@@ -6,20 +6,40 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 
-const allowedOrigins = (process.env.CORS_ORIGINS || 'https://taskflow-5tsv.onrender.com,http://localhost:5173').split(',');
-app.use(
-  cors({
-    origin: [
-      "https://task-flow-jj39.onrender.com",
-      "http://localhost:5173"
-    ]
-  })
-);
+// CORS configuration
+const corsEnv = process.env.CORS_ORIGINS;
+if (corsEnv === '*') {
+  console.log('CORS: allowing all origins (CORS_ORIGINS="*")');
+  app.use(cors({ origin: true, credentials: true }));
+} else {
+  const allowedOrigins = corsEnv
+    ? corsEnv.split(',').map(s => s.trim()).filter(Boolean)
+    : ['https://taskflow-5tsv.onrender.com', 'http://localhost:5173'];
+  console.log('CORS allowed origins:', allowedOrigins);
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow server-to-server or non-browser requests without an Origin header
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        console.warn('Blocked CORS request from origin:', origin);
+        return callback(new Error('Not allowed by CORS'));
+      },
+      credentials: true,
+    })
+  );
+}
 
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+if (!mongoUri) {
+  console.error('MONGODB_URI or MONGO_URI is not set. Exiting.');
+  process.exit(1);
+}
+console.log(`Using MongoDB URI from ${process.env.MONGODB_URI ? 'MONGODB_URI' : 'MONGO_URI'}`);
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('MongoDB connected'))
@@ -80,6 +100,12 @@ app.get('/api/tasks', async (req, res) => {
 // Lightweight health check for frontend connectivity
 app.get('/api/ping', (req, res) => {
   res.json({ ok: true });
+});
+
+// DB health check
+app.get('/api/health', (req, res) => {
+  const state = mongoose.connection.readyState; // 0 disconnected, 1 connected
+  res.json({ ok: state === 1, state });
 });
 
 // Create a new task. Accepts either `desc` or `description`.
