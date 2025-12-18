@@ -38,7 +38,7 @@ const Login = ({ setAuth }) => {
     return '';
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setTouched({
       email: true,
       password: true
@@ -50,15 +50,24 @@ const Login = ({ setAuth }) => {
       return;
     }
 
-    // Check credentials
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const user = users.find(u => u.email === formData.email && u.password === formData.password);
-
-    if (user) {
-      toast.success(`Welcome back, ${user.username}!`);
-      setAuth({ email: user.email, username: user.username });
-    } else {
-      toast.error("Invalid email or password");
+    try {
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(`Welcome back, ${data.user.username}!`);
+        setAuth({ email: data.user.email, username: data.user.username });
+      } else {
+        toast.error(data.message || "Invalid email or password");
+      }
+    } catch (error) {
+      toast.error("Login failed. Please try again later.");
     }
   };
 
@@ -85,7 +94,7 @@ const Login = ({ setAuth }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-90 to-white px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50 px-4">
       <motion.div
         className="w-full max-w-md"
         variants={containerVariants}
@@ -93,9 +102,11 @@ const Login = ({ setAuth }) => {
         animate="visible"
       >
         <motion.div 
-          className="bg-white rounded-2xl shadow-lg p-8 space-y-6"
+          className="bg-white rounded-2xl shadow-sm p-8 space-y-6 border border-gray-100"
+          initial={{ scale: 0.995, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
         >
           <motion.h2 
             className="text-3xl font-bold text-center text-gray-900 mb-8"
@@ -123,9 +134,11 @@ const Login = ({ setAuth }) => {
                 className={`w-full px-4 py-3 rounded-xl border ${
                   touched.email && !formData.email 
                     ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-200 focus:ring-blue-500'
-                } bg-gray-50 focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
+                    : 'border-gray-200 focus:ring-blue-700'
+                } bg-white focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
                 whileFocus={{ scale: 1.01 }}
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.995 }}
               />
             </div>
 
@@ -147,16 +160,18 @@ const Login = ({ setAuth }) => {
                 className={`w-full px-4 py-3 rounded-xl border ${
                   touched.password && !formData.password 
                     ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-200 focus:ring-blue-500'
-                } bg-gray-50 focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
+                    : 'border-gray-200 focus:ring-blue-700'
+                } bg-white focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
                 whileFocus={{ scale: 1.01 }}
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.995 }}
               />
             </div>
           </motion.div>
 
           <motion.button
             onClick={handleLogin}
-            className="w-full px-4 py-3 text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-medium"
+            className="w-full px-4 py-3 text-white bg-blue-700 rounded-xl hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2 transition-all font-medium shadow-sm"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             variants={itemVariants}

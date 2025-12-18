@@ -23,11 +23,11 @@ const Sidebar = ({ setAuth }) => {
     };
 
     return (
-        <div className="text-black p-4">
+        <div className="text-white p-4 bg-gray-900 h-full">
             {/* Header Section */}
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-blue-950">Welcome</h1>
-                <hr className="my-4 border border-gray-600" />
+                <h1 className="text-2xl font-bold text-white">TaskFlow</h1>
+                <hr className="my-4 border border-gray-700" />
             </div>
 
             {/* Sidebar Links Section */}
@@ -35,7 +35,7 @@ const Sidebar = ({ setAuth }) => {
                 {data.map((item, index) => (
                     <Link to={item.path} key={index}>
                         <div
-                            className="flex items-center py-2 px-4 my-2 rounded cursor-pointer hover:bg-green-600 transition duration-200"
+                            className="flex items-center py-2 px-4 my-2 rounded cursor-pointer hover:bg-gray-100 transition duration-200"
                         >
                             <span className="mr-3 text-2xl">{item.icon}</span>
                             <span className="text-sm">{item.title}</span>
@@ -46,7 +46,7 @@ const Sidebar = ({ setAuth }) => {
                 {/* Logout Button */}
                 <div
                     onClick={handleLogout}
-                    className="flex items-center py-2 px-4 mt-6 rounded cursor-pointer hover:bg-red-600 transition duration-200 text-red-500"
+                    className="flex items-center py-2 px-4 mt-6 rounded cursor-pointer hover:bg-red-50 transition duration-200 text-red-600"
                 >
                     <FiLogOut size={20} className="mr-3" />
                     <span className="text-sm">Logout</span>

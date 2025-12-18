@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const Signup = ({ setAuth }) => {
+const Signup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
@@ -33,7 +33,7 @@ const Signup = ({ setAuth }) => {
     }));
   };
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     setTouched({
       username: true,
       email: true,
@@ -64,24 +64,27 @@ const Signup = ({ setAuth }) => {
       return;
     }
 
-    // Store user credentials
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const userExists = users.some(user => user.email === formData.email);
-
-    if (userExists) {
-      toast.error("Email already registered");
-      return;
+    try {
+      const response = await fetch('http://localhost:5000/api/users/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Signup successful! Please login.");
+        navigate("/login");
+      } else {
+        toast.error(data.message || "Signup failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Signup failed. Please try again later.");
     }
-
-    users.push({
-      username: formData.username,
-      email: formData.email,
-      password: formData.password
-    });
-    localStorage.setItem("users", JSON.stringify(users));
-    
-    toast.success("Signup successful! Please login.");
-    navigate("/login");
   };
 
   const containerVariants = {
@@ -107,7 +110,7 @@ const Signup = ({ setAuth }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-white px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50 px-4">
       <motion.div
         className="w-full max-w-md"
         variants={containerVariants}
@@ -115,9 +118,11 @@ const Signup = ({ setAuth }) => {
         animate="visible"
       >
         <motion.div 
-          className="bg-white rounded-2xl shadow-lg p-8 space-y-6"
+          className="bg-white rounded-2xl shadow-md p-8 space-y-6 border border-gray-100"
+          initial={{ scale: 0.995, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
         >
           <motion.h2 
             className="text-3xl font-bold text-center text-gray-900 mb-8"
@@ -141,9 +146,11 @@ const Signup = ({ setAuth }) => {
                 className={`w-full px-4 py-3 rounded-xl border ${
                   touched.username && !formData.username 
                     ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-200 focus:ring-green-500'
-                } bg-gray-50 focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
+                    : 'border-gray-200 focus:ring-green-700'
+                } bg-white focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
                 whileFocus={{ scale: 1.01 }}
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.995 }}
               />
             </div>
 
@@ -161,9 +168,11 @@ const Signup = ({ setAuth }) => {
                 className={`w-full px-4 py-3 rounded-xl border ${
                   touched.email && !formData.email 
                     ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-200 focus:ring-green-500'
-                } bg-gray-50 focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
+                    : 'border-gray-200 focus:ring-green-700'
+                } bg-white focus:bg-white focus:border-transparent focus:outline-none focus:ring-2 transition-all`}
                 whileFocus={{ scale: 1.01 }}
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.995 }}
               />
             </div>
 
@@ -210,7 +219,7 @@ const Signup = ({ setAuth }) => {
 
           <motion.button
             onClick={handleSignup}
-            className="w-full px-4 py-3 text-white bg-green-600 rounded-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all font-medium"
+            className="w-full px-4 py-3 text-white bg-green-700 rounded-xl hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2 transition-all font-medium shadow-sm"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             variants={itemVariants}

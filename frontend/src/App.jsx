@@ -6,12 +6,54 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Cards from "./components/Home/Cards";
 import Dashboard from "./components/Dashboard/Dashboard";
+import { FiLogOut } from 'react-icons/fi';
 
 const App = () => {
   const [auth, setAuth] = useState(false);
   const [user, setUser] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
   const [showAddTask, setShowAddTask] = useState(true);
+  // Sidebar state for mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // API base and connection state
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const check = async (timeout = 3000) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const res = await fetch(`${API_BASE}/api/ping`, { signal: controller.signal, cache: 'no-store' });
+        clearTimeout(id);
+        if (res.ok && mounted) {
+          setIsOnline(true);
+          return true;
+        }
+      } catch (err) {
+        console.warn('Connection check failed', err);
+      }
+      if (mounted) setIsOnline(false);
+      return false;
+    };
+
+    // initial check + periodic checks
+    check();
+    const iv = setInterval(() => check(), 10000);
+    const onConnectionLost = () => setIsOnline(false);
+    const onRetry = () => check();
+    window.addEventListener('connection-lost', onConnectionLost);
+    window.addEventListener('retry-connection', onRetry);
+    return () => {
+      mounted = false;
+      clearInterval(iv);
+      window.removeEventListener('connection-lost', onConnectionLost);
+      window.removeEventListener('retry-connection', onRetry);
+    };
+  }, [API_BASE]);
+
 
   useEffect(() => {
     const savedAuth = JSON.parse(localStorage.getItem("auth"));
@@ -44,45 +86,102 @@ const App = () => {
 
   return (
     <Router>
-      <div className="App min-h-screen bg-gray-50">
+      <div className="App min-h-screen bg-blue-50">
         <ToastContainer />
         
-        {/* Sidebar for authenticated users */}
+        {/* Sidebar for authenticated users (responsive & light theme) */}
         {auth && (
-          <div className="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-blue-950 to-blue-900 shadow-lg z-10 border-r border-white/10">
-            <div className="p-6 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">Task Manager</h2>
-              <p className="text-sm text-white/70 mt-1">Welcome, {user?.username}!</p>
-            </div>
-            
-            <nav className="mt-6 px-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="flex items-center px-4 py-3 text-white/80 hover:bg-blue-800/50 rounded-lg mb-2 transition-colors"
+          <>
+            {/* Desktop sidebar (dark) */}
+            <aside className="hidden md:fixed md:left-0 md:top-0 md:h-full md:w-64 bg-gray-900 text-white shadow z-10 md:block border-r border-gray-800">
+              <div className="p-6 border-b border-gray-800">
+                <h2 className="text-xl font-bold text-white">TaskFlow</h2>
+                <p className="text-sm text-gray-300 mt-1">Welcome, {user?.username}!</p>
+              </div>
+              <nav className="mt-6 px-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="flex items-center px-4 py-3 text-gray-200 hover:bg-gray-800 rounded-lg mb-2 transition-colors"
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    {item.name}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-4 py-3 text-red-400 hover:bg-gray-800 rounded-lg transition-colors mt-4"
                 >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.name}
-                </Link>
-              ))}
-              <button
-                onClick={handleLogout}
-                className="flex items-center w-full px-4 py-3 text-red-300 hover:bg-red-500/20 rounded-lg transition-colors mt-4"
-              >
-                <span className="mr-3">🚪</span>
-                Logout
-              </button>
-            </nav>
-          </div>
+                  <FiLogOut className="mr-3" />
+                  Logout
+                </button>
+              </nav>
+            </aside>
+
+            {/* Mobile sidebar (drawer) */}
+            <div className={`fixed inset-0 z-30 md:hidden ${sidebarOpen ? '' : 'pointer-events-none'}`} aria-hidden={!sidebarOpen}>
+              <div className={`absolute inset-0 bg-black/30 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setSidebarOpen(false)} />
+              <aside className={`absolute left-0 top-0 bottom-0 w-72 bg-white shadow transform transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-6 border-b flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-800">TaskFlow</h2>
+                    <p className="text-xs text-gray-500">Welcome, {user?.username}!</p>
+                  </div>
+                  <button className="text-gray-500" onClick={() => setSidebarOpen(false)}>Close</button>
+                </div>
+                <nav className="mt-6 px-4">
+                  {navItems.map((item) => (
+                    <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
+                      <div className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg mb-2 transition-colors">
+                        <span className="mr-3">{item.icon}</span>
+                        <span>{item.name}</span>
+                      </div>
+                    </Link>
+                  ))}
+                  <button onClick={() => { setSidebarOpen(false); handleLogout(); }} className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-4">
+                    <FiLogOut className="mr-3" />
+                    Logout
+                  </button>
+                </nav>
+              </aside>
+            </div>
+          </>
         )}
 
         {/* Main Content */}
-        <div className={`${auth ? 'ml-64' : ''} min-h-screen transition-all duration-300 bg-gradient-to-br from-blue-900 via-blue-600 to-blue-400`}>
+        <div className={`${auth ? 'md:ml-64' : ''} min-h-screen transition-all duration-300 bg-blue-50` }>
+          {/* Offline banner */}
+          {!isOnline && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-center flex items-center justify-between gap-3">
+                <span>Connection lost — some actions may fail.</span>
+                <button onClick={() => window.dispatchEvent(new Event('retry-connection'))} className="text-sm text-red-700 underline">Retry</button>
+              </div>
+            </div>
+          )}
+
+          {/* Top header for mobile when authenticated */}
+          {auth && (
+            <header className="md:hidden bg-white shadow">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                  </button>
+                  <h1 className="text-lg font-semibold text-gray-800">TaskFlow</h1>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{user?.username}</span>
+                </div>
+              </div>
+            </header>
+          )}
+
           {!auth && (
-            <header className="bg-white/10 backdrop-blur-md">
+            <header className="bg-white/0">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-white">Task Management App</h1>
+                <h1 className="text-2xl font-bold text-gray-800">TaskFlow</h1>
                 <div className="space-x-4">
                   <Link
                     to="/login"
@@ -120,7 +219,7 @@ const App = () => {
                       <div className="bg-white p-4 rounded-lg shadow-sm">
                         <div className="flex justify-between items-center">
                           <div className="space-x-2">
-                            {["All", "Incomplete", "Complete", "Important"].map((status) => (
+                            { ["All", "Incomplete", "Complete", "Important"].map((status) => (
                               <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
@@ -132,7 +231,7 @@ const App = () => {
                               >
                                 {status}
                               </button>
-                            ))}
+                            )) }
                           </div>
                           <button
                             onClick={() => setShowAddTask(!showAddTask)}
