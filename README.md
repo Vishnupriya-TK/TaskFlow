@@ -52,40 +52,45 @@ TaskFlow is a full-stack task management application built using **React + Vite*
 **Frontend** (`src/`)
 
 ```
-src/
-├── pages/
-│   ├── Login.jsx
-│   ├── Signup.jsx
-│   ├── AllTasks.jsx
-│   ├── CompletedTasks.jsx
-│   ├── ImportantTasks.jsx
-│   └── IncompletedTasks.jsx
-├── components/
-│   ├── Dashboard.jsx
-│   ├── Home.jsx
-│   └── TaskCard.jsx
-├── api.js
-├── App.jsx
-├── main.jsx
-└── index.css
+frontend/
+├── public/
+│   └── vite.svg
+├── src/
+│   ├── assets/
+│   ├── components/
+│   └── pages/
+│       ├── AllTasks.jsx
+│       ├── CompletedTasks.jsx
+│       ├── Home.jsx
+│       ├── ImportantTasks.jsx
+│       ├── IncompletedTasks.jsx
+│       ├── Login.jsx
+│       └── Signup.jsx
+│   ├── App.jsx
+│   ├── main.jsx
+│   ├── App.css
+│   └── index.css
+├── node_modules
+├── package.json
+├── package-lock.json
+├── .env
+├── .gitignore
+├── eslint.config.js
+└── index.html
+
 ```
 
 **Backend** (`backend/`)
 
 ```
 backend/
-├── models/
-│   ├── User.js
-│   └── Task.js
-├── routes/
-│   ├── auth.js
-│   └── tasks.js
-├── middleware/
-│   └── auth.js
-├── config/
-│   └── db.js
-├── server.js
-└── .env
+├── index.js        
+├── package.json
+├── package-lock.json
+├── .env             
+├── node_modules
+└── README.md
+
 ```
 
 ---
