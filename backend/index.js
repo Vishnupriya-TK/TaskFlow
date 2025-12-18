@@ -6,17 +6,15 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 
-// Configure allowed CORS origins via env var `CORS_ORIGINS` (comma-separated)
 const allowedOrigins = (process.env.CORS_ORIGINS || 'https://taskflow-5tsv.onrender.com,http://localhost:5173').split(',');
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow non-browser tools like curl/Postman when origin is undefined
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-    return callback(new Error('CORS policy does not allow access from the specified Origin.'), false);
-  },
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: [
+      "https://task-flow-jj39.onrender.com",
+      "http://localhost:5173"
+    ]
+  })
+);
 
 app.use(express.json());
 
