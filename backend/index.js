@@ -7,15 +7,21 @@ const bcrypt = require('bcryptjs');
 const app = express();
 
 // CORS configuration
-const corsEnv = process.env.CORS_ORIGINS;
-if (corsEnv === '*') {
-  console.log('CORS: allowing all origins (CORS_ORIGINS="*")');
-  app.use(cors({ origin: true, credentials: true }));
-} else {
-  const allowedOrigins = corsEnv
-    ? corsEnv.split(',').map(s => s.trim()).filter(Boolean)
-    : ['https://taskflow-5tsv.onrender.com', 'http://localhost:5173'];
-  console.log('CORS allowed origins:', allowedOrigins);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests from frontend or allow server-to-server requests without origin
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn('Blocked CORS request from', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+
+
   app.use(
     cors({
       origin: (origin, callback) => {
