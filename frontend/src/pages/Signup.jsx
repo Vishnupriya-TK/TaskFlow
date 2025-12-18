@@ -17,6 +17,7 @@ const Signup = () => {
     password: false,
     confirmPassword: false
   });
+  const API_BASE = import.meta.env.VITE_API_URL || 'https://taskflow-5tsv.onrender.com';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +66,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/signup', {
+      const response = await fetch(`${API_BASE}/api/users/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

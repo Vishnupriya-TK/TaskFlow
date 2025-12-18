@@ -17,7 +17,7 @@ const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // API base and connection state
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_URL || 'https://taskflow-5tsv.onrender.com';
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {

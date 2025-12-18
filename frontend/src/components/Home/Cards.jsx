@@ -10,7 +10,7 @@ const Cards = ({ filterStatus = "All", showAddTask = false }) => {
   const [selected, setSelected] = useState([]); // array of selected task _id
   const [newTask, setNewTask] = useState({ title: "", desc: "", status: "Incomplete" });
   const [isEditing, setIsEditing] = useState(null);
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_URL || 'https://taskflow-5tsv.onrender.com';
 
   // helper to toggle selection
   const toggleSelect = (id) => {

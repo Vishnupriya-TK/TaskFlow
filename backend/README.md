@@ -17,7 +17,13 @@ npm install
 npm start
 ```
 
-The API base will be available on `http://localhost:5000` by default. Endpoints:
+The API base will be available on `http://localhost:5000` by default. To lock which frontends can access the API, you can set `CORS_ORIGINS` in your `.env` (comma-separated list of allowed origins). Example:
+
+```
+CORS_ORIGINS=https://taskflow-5tsv.onrender.com,http://localhost:5173
+```
+
+Endpoints:
 
 - GET  /api/tasks
 - POST /api/tasks
